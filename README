@@ -1,1 +1,3 @@
-ToxSync - sync files securely using the Tox protocol
+ToxSync - sync files securely using the Tox protocol. It is an ncurses client for Linux to start with. If I ever finish it and it proves popular, I will make a Windows and Android client
+
+Not even near useable at the moment. Just working on it here and there whenever I get a moment.
