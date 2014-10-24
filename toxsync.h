@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <ncurses.h>
 #include <string.h>
+#include <unistd.h>
+#include <ctype.h>
 
 #include <tox/tox.h>
 

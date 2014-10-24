@@ -2,7 +2,8 @@
 
 int ROW, COL;
 Tox *tox;
-
+char* user_input;
+char* lines_on_screen;
 
 void print_title() {
 	attron(A_BOLD | A_UNDERLINE);
@@ -115,7 +116,7 @@ int init_tox() {
 
 	char* address = "37.59.102.176";
 	uint16_t port = 33445;
-	unsigned char* binary_string = hex_string_to_bin("B98A2CEAA6C6A2FADC2C3632D284318B60FE5375CCB41EFA081AB67F500C1BOB");
+	unsigned char* binary_string = hex_string_to_bin("B98A2CEAA6C6A2FADC2C3632D284318B60FE5375CCB41EFA081AB67F500C1B0B");
 	int res = tox_bootstrap_from_address(tox, address, port, binary_string);
 	free(binary_string);
 
@@ -133,18 +134,69 @@ void shutdown() {
 	endwin();
 }
 
+void append_user_input(int c) {
+	
+}
+
+void evaluate_input() {
+}
+
+void loop() {
+	int keep_running = 1;	
+	while(keep_running) {
+		tox_do(tox);
+
+		/* Print disconnected/connected in top right */
+		char* message;
+		int type;
+		if (tox_isconnected(tox)) {
+			type = 1;
+			message = "[ Connected ]";
+		} else {
+			type = 2;
+			message = "[ Disconnected ]";
+		}
+		attron(COLOR_PAIR(type) | A_BOLD);
+		mvprintw(0, COL-strlen(message), "%s", message);
+		attroff(COLOR_PAIR(type) | A_BOLD);
+
+		/* Process user input */
+		int c = getch();
+		if (c == ERR) // nodelay() in main() sets getch() to ERR if no user input was available
+			continue;	
+		else if (c == 3) // Ctrl-C
+			keep_running = 0;	
+		else if (isalnum(c) | c == 32 | ispunct(c)) // alphanumeric, space, punctuation
+			append_user_input(c);	
+		else if (c == 13) // enter/return
+			evaluate_input();
+
+		refresh();
+		usleep(50000);	
+	}
+}
+
 int main() {
 	initscr();
+	raw();
+	noecho();
+	nodelay(stdscr, TRUE);
 	getmaxyx(stdscr, ROW, COL);
+	
+	start_color();
+	init_pair(1, COLOR_GREEN, COLOR_BLACK);
+	init_pair(2, COLOR_RED, COLOR_BLACK);
 
 	int res = init_tox();
 
+	/* Failed to init tox in some way */
 	if (res == -1)
 		return -1;
 
 	print_help();
 	print_bottom_bar();
-	refresh();
+
+	loop();	
 
 	shutdown();
 
